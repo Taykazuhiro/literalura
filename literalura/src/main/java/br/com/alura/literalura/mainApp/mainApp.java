@@ -25,10 +25,10 @@ public class mainApp {
         while (option != 0) {
             System.out.println(MENUS.showDefaultMenu());
             try {
-                option = Integer.parseInt(reader.nextLine());  // Faz a leitura como String e depois tenta converter
+                option = Integer.parseInt(reader.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("Por favor, digite apenas o número da opção do menu.");
-                continue;  // Volta para o início do loop
+                continue;
             }
 
             switch (option) {

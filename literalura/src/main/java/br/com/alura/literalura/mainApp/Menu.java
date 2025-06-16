@@ -24,5 +24,16 @@ public class Menu {
                 """;
         return menu;
     }
+
+    public String showLanguageMenu() {
+        var menu = """
+                ____________________________
+                Digite um número para escolhar um idioma para busca:
+                1. Português
+                2. Inglês
+                3. Francês
+                """;
+        return menu;
+    }
 }
 

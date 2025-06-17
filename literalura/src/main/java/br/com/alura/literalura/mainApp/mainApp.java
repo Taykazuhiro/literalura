@@ -1,7 +1,9 @@
 package br.com.alura.literalura.mainApp;
 
 import br.com.alura.literalura.model.ApiData;
+import br.com.alura.literalura.model.AuthorData;
 import br.com.alura.literalura.model.BookData;
+import br.com.alura.literalura.repository.AuthorRepository;
 import br.com.alura.literalura.service.DataConverter;
 import br.com.alura.literalura.service.UsingAPI;
 
@@ -19,6 +21,11 @@ public class mainApp {
     private UsingAPI api = new UsingAPI();
 
     private List<BookData> savedBooks = new ArrayList<>();
+    private AuthorRepository authorRepository;
+
+    public mainApp(AuthorRepository authorRepository) {
+        this.authorRepository = authorRepository;
+    }
 
     public void showMenu() {
         int option = -1;
@@ -70,16 +77,18 @@ public class mainApp {
                     if (!bookAlreadySaved) {
                         System.out.println("\nLivro salvo: " + book.getTitle());
                         System.out.println("Autores:");
-                        if (book.getAuthorDataList() != null) {
-                            book.getAuthorDataList().forEach(author ->
-                                    System.out.println("- " + author.getName() +
-                                            (author.getBirthYear() != null ? " (Nascido em: " + author.getBirthYear() + ")" : "") +
-                                            (author.getDeathYear() != null ? " (Falecido em: " + author.getDeathYear() + ")" : ""))
-                            );
+                        if (book.getAuthorDataList() != null && !book.getAuthorDataList().isEmpty()) {
+                            for (AuthorData author : book.getAuthorDataList()) {
+                                System.out.println("- " + author.getName() +
+                                        (author.getBirthYear() != null ? " (Nascido em: " + author.getBirthYear() + ")" : "") +
+                                        (author.getDeathYear() != null ? " (Falecido em: " + author.getDeathYear() + ")" : ""));
+                                authorRepository.save(author);
+                            }
                         } else {
                             System.out.println("- Nenhum autor encontrado.");
                         }
-                        savedBooks.add(book);
+                        //savedBooks.add(book);
+
                     }
                 }
             } else {

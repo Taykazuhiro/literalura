@@ -2,17 +2,23 @@ package br.com.alura.literalura.model;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+
+
 public class BookData {
+
+
     private Long id;
     private String title;
 
     @JsonAlias("authors")
+    @Transient
     private List<AuthorData> authorDataList;
-
+    @Transient
     private List<String> languages;
 
     public Long getId() { return id; }

@@ -4,27 +4,29 @@ import br.com.alura.literalura.model.ApiData;
 import br.com.alura.literalura.model.AuthorData;
 import br.com.alura.literalura.model.BookData;
 import br.com.alura.literalura.repository.AuthorRepository;
+import br.com.alura.literalura.repository.BooksRepository;
 import br.com.alura.literalura.service.DataConverter;
 import br.com.alura.literalura.service.UsingAPI;
-
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class mainApp {
 
-    private Scanner reader = new Scanner(System.in);
+    private final Scanner READER = new Scanner(System.in);
     private final Menu MENUS = new Menu();
-    private final String ENDERECO = "https://gutendex.com/books/?search=";
-    private DataConverter converter = new DataConverter();
-    private UsingAPI api = new UsingAPI();
+    private final String URL = "https://gutendex.com/books/?search=";
+    private final DataConverter CONVERTER = new DataConverter();
+    private final UsingAPI API = new UsingAPI();
 
     private List<BookData> savedBooks = new ArrayList<>();
     private AuthorRepository authorRepository;
+    private BooksRepository booksRepository;
 
-    public mainApp(AuthorRepository authorRepository) {
+    public mainApp(AuthorRepository authorRepository, BooksRepository booksRepository) {
         this.authorRepository = authorRepository;
+        this.booksRepository = booksRepository;
     }
 
     public void showMenu() {
@@ -32,7 +34,7 @@ public class mainApp {
         while (option != 0) {
             System.out.println(MENUS.showDefaultMenu());
             try {
-                option = Integer.parseInt(reader.nextLine());
+                option = Integer.parseInt(READER.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("Por favor, digite apenas o número da opção do menu.");
                 continue;
@@ -64,37 +66,29 @@ public class mainApp {
     }
 
     private void searchBookAPI() {
-            System.out.println(MENUS.showSmallMenu());
-            var userBook = reader.nextLine();
-            var json = api.APIConnection(ENDERECO + userBook.replace(" ", "%20"));
-            ApiData searchBook = converter.getData(json, ApiData.class);
+        System.out.println(MENUS.showSmallMenu());
+        var userBook = READER.nextLine();
+        var json = API.APIConnection(URL + userBook.replace(" ", "%20"));
 
-            if (searchBook != null && searchBook.getResults() != null && !searchBook.getResults().isEmpty()) {
-                for (BookData book : searchBook.getResults()) {
-                    boolean bookAlreadySaved = savedBooks.stream()
-                            .anyMatch(saved -> saved.getTitle().equalsIgnoreCase(book.getTitle()));
+        ApiData apiData = CONVERTER.getData(json, ApiData.class);
 
-                    if (!bookAlreadySaved) {
-                        System.out.println("\nLivro salvo: " + book.getTitle());
-                        System.out.println("Autores:");
-                        if (book.getAuthorDataList() != null && !book.getAuthorDataList().isEmpty()) {
-                            for (AuthorData author : book.getAuthorDataList()) {
-                                System.out.println("- " + author.getName() +
-                                        (author.getBirthYear() != null ? " (Nascido em: " + author.getBirthYear() + ")" : "") +
-                                        (author.getDeathYear() != null ? " (Falecido em: " + author.getDeathYear() + ")" : ""));
-                                authorRepository.save(author);
-                            }
-                        } else {
-                            System.out.println("- Nenhum autor encontrado.");
-                        }
-                        //savedBooks.add(book);
+        if (apiData.getResults() != null && !apiData.getResults().isEmpty()) {
+            BookData book = apiData.getResults().get(0);
+            System.out.println(book);
 
-                    }
-                }
+            Optional<BookData> existingBook = booksRepository.findByTitle(book.getTitle());
+            if (existingBook.isPresent()) {
+                System.out.println("Livro já foi registrado");
             } else {
-                System.out.println("Nenhum livro encontrado com esse título.");
+                booksRepository.save(book);
+                System.out.println("Livro salvo com sucesso");
             }
+        } else {
+            System.out.println("Nenhum livro encontrado.");
         }
+     }
+
+
 
     private void showSavedBooks() {
         if (savedBooks.isEmpty()) {
@@ -111,10 +105,10 @@ public class mainApp {
             return;
         }
 
-        System.out.println("\nAutores registrados:");
-        savedBooks.stream()
-                .flatMap(book -> book.getAuthorDataList().stream())
-                .distinct()
-                .forEach(author -> System.out.println("- " + author.getName()));
+//        System.out.println("\nAutores registrados:");
+//        savedBooks.stream()
+//                .flatMap(book -> book.getAuthor())
+//                .distinct()
+//                .forEach(author -> System.out.println("- " + author.getName()));
     }
 }

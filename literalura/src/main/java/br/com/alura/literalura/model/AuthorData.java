@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 @Table(name = "Author")
@@ -21,6 +24,18 @@ public class AuthorData {
 
     @JsonAlias("death_year")
     private Integer deathYear;
+
+    @ManyToOne
+    @JoinColumn(name = "book_id")
+    private BookData book;
+
+    public AuthorData(){}
+
+    public AuthorData(String name, Integer birthYear, Integer deathYear){
+        this.name=name;
+        this.birthYear=birthYear;
+        this.deathYear=deathYear;
+    }
 
     public Long getId() {
         return id;

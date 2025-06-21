@@ -1,40 +1,40 @@
 package br.com.alura.literalura.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import br.com.alura.literalura.DTO.RAuthorData;
+
+
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+
 @Entity
-@Table(name = "Author")
+@Table(name = "Authors")
 public class AuthorData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(unique = true)
     private String name;
-
-    @JsonAlias("birth_year")
     private Integer birthYear;
-
-    @JsonAlias("death_year")
     private Integer deathYear;
 
-    @ManyToOne
-    @JoinColumn(name = "book_id")
-    private BookData book;
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<BookData> books = new ArrayList<>();
 
     public AuthorData(){}
 
-    public AuthorData(String name, Integer birthYear, Integer deathYear){
-        this.name=name;
-        this.birthYear=birthYear;
-        this.deathYear=deathYear;
+    public AuthorData(RAuthorData rAuthorData){
+        this.name=String.valueOf(rAuthorData.name());
+        this.birthYear=Integer.valueOf(rAuthorData.birthYear());
+        this.deathYear=Integer.valueOf(rAuthorData.deathYear());
+    }
+    private List<String> getBookTitle(){
+        return books.stream()
+                .map(BookData::getTitle)
+                .collect(Collectors.toList());
     }
 
     public Long getId() {
@@ -53,4 +53,14 @@ public class AuthorData {
 
     public Integer getDeathYear() { return deathYear; }
     public void setDeathYear(Integer deathYear) { this.deathYear = deathYear; }
+
+    @Override
+    public String toString() {
+        return "---------------- DADOS DO AUTOR ---------------- " +
+                "\n Autor: " + name +
+                "\n Ano de Nascimento: " + birthYear +
+                "\n Ano de Falecimento: " + deathYear +
+                "\n Livros: " + getBookTitle() +
+                "------------------------------------------------ ";
+    }
 }

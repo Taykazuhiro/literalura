@@ -1,12 +1,16 @@
 package br.com.alura.literalura.mainApp;
 
-import br.com.alura.literalura.model.ApiData;
+import br.com.alura.literalura.DTO.RApiData;
+import br.com.alura.literalura.DTO.RAuthorData;
+import br.com.alura.literalura.DTO.RBookData;
 import br.com.alura.literalura.model.AuthorData;
 import br.com.alura.literalura.model.BookData;
 import br.com.alura.literalura.repository.AuthorRepository;
 import br.com.alura.literalura.repository.BooksRepository;
 import br.com.alura.literalura.service.DataConverter;
 import br.com.alura.literalura.service.UsingAPI;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,29 +69,55 @@ public class mainApp {
         }
     }
 
+
     private void searchBookAPI() {
-        System.out.println(MENUS.showSmallMenu());
-        var userBook = READER.nextLine();
-        var json = API.APIConnection(URL + userBook.replace(" ", "%20"));
+        RBookData userbook = getBookData();
+        if (userbook != null){
+            //pega o primeiro autor da lista de autores da record livros
+            RAuthorData rAuthorData = userbook.authors().get(0);
+            BookData bookData;
+            AuthorData existedAuthor = authorRepository.findByName(rAuthorData.name());
+            if (existedAuthor != null) {
+                bookData = new BookData(userbook,existedAuthor);
 
-        ApiData apiData = CONVERTER.getData(json, ApiData.class);
-
-        if (apiData.getResults() != null && !apiData.getResults().isEmpty()) {
-            BookData book = apiData.getResults().get(0);
-            System.out.println(book);
-
-            Optional<BookData> existingBook = booksRepository.findByTitle(book.getTitle());
-            if (existingBook.isPresent()) {
-                System.out.println("Livro já foi registrado");
             } else {
-                booksRepository.save(book);
-                System.out.println("Livro salvo com sucesso");
+                AuthorData newAuthor = new AuthorData(rAuthorData);
+                bookData = new BookData(userbook, newAuthor);
+                authorRepository.save(newAuthor);
             }
-        } else {
-            System.out.println("Nenhum livro encontrado.");
-        }
-     }
+            try {
+                booksRepository.save(bookData);
+                System.out.println("Livro salvo no banco de dados!");
+            } catch (DataIntegrityViolationException e){
+                System.out.println("Livro já está cadastrado no banco:");
+            }
+            }
 
+
+//        System.out.println(MENUS.showSmallMenu());
+//        String userBook = READER.nextLine();
+//        String json = API.APIConnection(URL + userBook.replace(" ", "%20"));
+//        ApiData searchBook = CONVERTER.getData(json, ApiData.class);
+
+    }
+
+    public RBookData getBookData() {
+        System.out.println(MENUS.showSmallMenu());
+        String userBook = READER.nextLine();
+        String json = API.APIConnection(URL + userBook.replace(" ", "%20"));
+        //pega a lista de results dentro do json
+        RApiData searchBook = CONVERTER.getData(json, RApiData.class);
+        //manipula results para se tornar o record de livros
+        Optional <RBookData> bookConverted = searchBook.results().stream()
+                .filter(book -> book.title().toUpperCase().contains(userBook.toUpperCase()))
+                .findFirst();
+
+        if(bookConverted.isPresent()) {
+            return bookConverted.get();
+        } else {
+        return null;
+        }
+    }
 
 
     private void showSavedBooks() {

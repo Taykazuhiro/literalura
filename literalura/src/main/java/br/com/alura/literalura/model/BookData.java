@@ -1,38 +1,33 @@
 package br.com.alura.literalura.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import br.com.alura.literalura.DTO.RBookData;
 import jakarta.persistence.*;
-
-import java.util.ArrayList;
 import java.util.List;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 
 @Entity
 @Table (name = "books")
 public class BookData {
-    @JsonIgnore
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String title;
 
-    @JsonAlias("authors")
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<AuthorData> authors;
+    @ManyToOne
+    private AuthorData author;
 
     private List<String> languages;
+    private Double downloadCount;
 
-    public BookData(String title, List<String> languages, List<AuthorData> authors) {
-        this.title = title;
-        this.languages = languages;
-        this.authors = authors;
-    }
+    public BookData(){}
 
-    public BookData() {
+    public BookData(RBookData rBookData, AuthorData authorData){
+        this.title = rBookData.title();
+        this.author = authorData;
+        this.languages = rBookData.languages();
+        this.downloadCount= rBookData.downloadCount();
     }
 
     public Long getId() {
@@ -51,12 +46,12 @@ public class BookData {
         this.title = title;
     }
 
-    public List<AuthorData> getAuthors() {
-        return authors;
+    public AuthorData getAuthor() {
+        return author;
     }
 
-    public void setAuthor(List<AuthorData> authors) {
-        this.authors = authors;
+    public void setAuthors(AuthorData author) {
+        this.author = author;
     }
 
     public List<String> getLanguages() {
@@ -65,5 +60,23 @@ public class BookData {
 
     public void setLanguages(List<String> languages) {
         this.languages = languages;
+    }
+
+    public Double getDownloadCount() {
+        return downloadCount;
+    }
+
+    public void setDownloadCount(Double downloadCount) {
+        this.downloadCount = downloadCount;
+    }
+
+    @Override
+    public String toString() {
+        return "---------------- DADOS DO Livro ---------------- " +
+                "\n Título: " + title +
+                "\n Autor: " + author +
+                "\n Idioma: " + languages +
+                "\n Número de Downloads: " + downloadCount +
+                "------------------------------------------------ ";
     }
 }

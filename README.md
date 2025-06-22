@@ -103,7 +103,7 @@ Este projeto faz parte do desafio **Literalura** do programa **Oracle Next Gener
 
 _____________________________
 
-<a id="#english-version"> English Version </a>
+<a id="english-version"> English Version </a>
 
 # Literalura 📚
 

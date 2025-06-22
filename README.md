@@ -7,6 +7,7 @@
 
 <p><a href="#english-version"> English Version </a></p>
 
+<a id="readme-top"></a>
 # 📚 Literalura
 
 Literalura é uma aplicação Java baseada em Spring Boot que permite buscar livros gratuitos via API pública do [Gutendex](https://gutendex.com/), salvando os dados de livros e autores em um banco de dados relacional.
@@ -103,7 +104,8 @@ Este projeto faz parte do desafio **Literalura** do programa **Oracle Next Gener
 
 _____________________________
 
-<a id="english-version"> English Version </a>
+<p align="left"><a id="english-version"> English Version </a></p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # Literalura 📚
 

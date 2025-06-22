@@ -55,10 +55,10 @@ public class mainApp {
                     showSavedAuthors();
                     break;
                 case 4:
-                    //searchAuthorsByYear();
+                    searchAuthorsByYear();
                     break;
                 case 5:
-                    //searchBooksByLanguage();
+                    searchBooksByLanguage();
                     break;
                 case 0:
                     System.out.println("Encerrando o programa...");
@@ -69,76 +69,122 @@ public class mainApp {
         }
     }
 
+    private void searchAuthorsByYear() {
+        int year = -1;
+        while ( year < 0){
+            try{
+            System.out.println("Digite ano para busca do autor:");
+            year = Integer.parseInt(READER.nextLine());
 
-    private void searchBookAPI() {
-        RBookData userbook = getBookData();
-        if (userbook != null){
-            //pega o primeiro autor da lista de autores da record livros
-            RAuthorData rAuthorData = userbook.authors().get(0);
-            BookData bookData;
-            AuthorData existedAuthor = authorRepository.findByName(rAuthorData.name());
-            if (existedAuthor != null) {
-                bookData = new BookData(userbook,existedAuthor);
+            if (year < 0 ){
+                System.out.println("Ano inválido. Digite valor com 4 digitos maior ou igual a 0.");
+            }
+        } catch (NumberFormatException e){
+                System.out.println("Digite apenas números inteiros!");}
+        }
+        List<AuthorData> authorListByYear = authorRepository.findAuthorAliveInYear(year);
+        if (authorListByYear.isEmpty()){
+            System.out.println("Nenhum autor encontrado para o ano buscado.");
+        } else {
+            System.out.println(authorListByYear);
+        }
+    }
 
+    private void searchBooksByLanguage() {
+        int languageOption = 0;
+        System.out.println(MENUS.showLanguageMenu());
+        try {
+            languageOption = Integer.parseInt(READER.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Idioma não suportado pela busca");
+        }
+        switch (languageOption) {
+            case 1:
+                searchByLanguage("%pt%");
+                break;
+            case 2:
+                searchByLanguage("%en%");
+                break;
+            case 3:
+                searchByLanguage("%de%");
+                break;
+            default:
+                System.out.println("Opção não suportada");
+        }
+
+    }
+
+    private void searchByLanguage(String language) {
+        List<BookData> languageSearched = booksRepository.searchBookByLanguage(language);
+        if (!languageSearched.isEmpty()) {
+            System.out.println("Livros encontrados:" + languageSearched);
+        } else {
+            System.out.println("Nenhum livro encontrado para o idioma buscado.");
+        }
+    }
+
+
+        private void searchBookAPI () {
+            RBookData userbook = getBookData();
+            if (userbook != null) {
+                //pega o primeiro autor da lista de autores da record livros
+                RAuthorData rAuthorData = userbook.authors().get(0);
+                BookData bookData;
+                AuthorData existedAuthor = authorRepository.findByName(rAuthorData.name());
+                if (existedAuthor != null) {
+                    bookData = new BookData(userbook, existedAuthor);
+
+                } else {
+                    AuthorData newAuthor = new AuthorData(rAuthorData);
+                    bookData = new BookData(userbook, newAuthor);
+                    authorRepository.save(newAuthor);
+                }
+                try {
+                    booksRepository.save(bookData);
+                    System.out.println("Livro salvo no banco de dados!" + bookData);
+                } catch (DataIntegrityViolationException e) {
+                    System.out.println("Livro já está cadastrado no banco:");
+                }
+            }
+
+        }
+
+        public RBookData getBookData () {
+            System.out.println(MENUS.showSmallMenu());
+            String userBook = READER.nextLine();
+            String json = API.APIConnection(URL + userBook.replace(" ", "%20"));
+            //pega a lista de results dentro do json
+            RApiData searchBook = CONVERTER.getData(json, RApiData.class);
+            //manipula results para se tornar o record de livros
+            Optional<RBookData> bookConverted = searchBook.results().stream()
+                    .filter(book -> book.title().toUpperCase().contains(userBook.toUpperCase()))
+                    .findFirst();
+
+            if (bookConverted.isPresent()) {
+                return bookConverted.get();
             } else {
-                AuthorData newAuthor = new AuthorData(rAuthorData);
-                bookData = new BookData(userbook, newAuthor);
-                authorRepository.save(newAuthor);
+                return null;
             }
-            try {
-                booksRepository.save(bookData);
-                System.out.println("Livro salvo no banco de dados!");
-            } catch (DataIntegrityViolationException e){
-                System.out.println("Livro já está cadastrado no banco:");
+        }
+
+
+        private void showSavedBooks () {
+            List<BookData> bookDataList = booksRepository.findAll();
+            if (bookDataList.isEmpty()) {
+                System.out.println("Nenhum livro registrado.");
+            } else {
+                System.out.println(bookDataList);
+
             }
+        }
+
+        private void showSavedAuthors () {
+            List<AuthorData> authorDataList = authorRepository.findAll();
+            if (authorDataList.isEmpty()) {
+                System.out.println("Nenhum autor registrado.");
+            } else {
+                System.out.println(authorDataList);
             }
-
-
-//        System.out.println(MENUS.showSmallMenu());
-//        String userBook = READER.nextLine();
-//        String json = API.APIConnection(URL + userBook.replace(" ", "%20"));
-//        ApiData searchBook = CONVERTER.getData(json, ApiData.class);
-
-    }
-
-    public RBookData getBookData() {
-        System.out.println(MENUS.showSmallMenu());
-        String userBook = READER.nextLine();
-        String json = API.APIConnection(URL + userBook.replace(" ", "%20"));
-        //pega a lista de results dentro do json
-        RApiData searchBook = CONVERTER.getData(json, RApiData.class);
-        //manipula results para se tornar o record de livros
-        Optional <RBookData> bookConverted = searchBook.results().stream()
-                .filter(book -> book.title().toUpperCase().contains(userBook.toUpperCase()))
-                .findFirst();
-
-        if(bookConverted.isPresent()) {
-            return bookConverted.get();
-        } else {
-        return null;
         }
     }
 
-
-    private void showSavedBooks() {
-        if (savedBooks.isEmpty()) {
-            System.out.println("Nenhum livro salvo até o momento.");
-        } else {
-            System.out.println("\nLivros salvos:");
-            savedBooks.forEach(book -> System.out.println("- " + book.getTitle()));
-        }
-    }
-
-    private void showSavedAuthors() {
-        if (savedBooks.isEmpty()) {
-            System.out.println("Nenhum autor registrado, pois ainda não há livros salvos.");
-            return;
-        }
-
-//        System.out.println("\nAutores registrados:");
-//        savedBooks.stream()
-//                .flatMap(book -> book.getAuthor())
-//                .distinct()
-//                .forEach(author -> System.out.println("- " + author.getName()));
-    }
-}

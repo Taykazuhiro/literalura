@@ -2,11 +2,13 @@ package br.com.alura.literalura.repository;
 
 import br.com.alura.literalura.model.BookData;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface BooksRepository extends JpaRepository<BookData, Long> {
-    Optional<BookData> findByTitleIgnoreCase(String title);
 
-    Optional<BookData> findByTitle(String title);
+    @Query("SELECT b FROM BookData b WHERE b.languages like :language")
+    List<BookData> searchBookByLanguage(String language);
 }

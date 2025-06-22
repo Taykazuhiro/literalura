@@ -31,10 +31,19 @@ public class AuthorData {
         this.birthYear=Integer.valueOf(rAuthorData.birthYear());
         this.deathYear=Integer.valueOf(rAuthorData.deathYear());
     }
-    private List<String> getBookTitle(){
+    public List<String> getBookTitle(){
         return books.stream()
                 .map(BookData::getTitle)
                 .collect(Collectors.toList());
+    }
+
+    public List<BookData> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<BookData> books) {
+        books.forEach(b->b.setAuthors(this));
+        this.books = books;
     }
 
     public Long getId() {
@@ -56,11 +65,8 @@ public class AuthorData {
 
     @Override
     public String toString() {
-        return "---------------- DADOS DO AUTOR ---------------- " +
-                "\n Autor: " + name +
+        return "\n Nome: " + name +
                 "\n Ano de Nascimento: " + birthYear +
-                "\n Ano de Falecimento: " + deathYear +
-                "\n Livros: " + getBookTitle() +
-                "------------------------------------------------ ";
+                "\n Ano de Falecimento: " + deathYear + "\n";
     }
 }

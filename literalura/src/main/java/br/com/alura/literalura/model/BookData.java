@@ -18,7 +18,7 @@ public class BookData {
     @ManyToOne
     private AuthorData author;
 
-    private List<String> languages;
+    private String languages;
     private Double downloadCount;
 
     public BookData(){}
@@ -26,7 +26,7 @@ public class BookData {
     public BookData(RBookData rBookData, AuthorData authorData){
         this.title = rBookData.title();
         this.author = authorData;
-        this.languages = rBookData.languages();
+        this.languages = String.valueOf(rBookData.languages());
         this.downloadCount= rBookData.downloadCount();
     }
 
@@ -54,11 +54,11 @@ public class BookData {
         this.author = author;
     }
 
-    public List<String> getLanguages() {
+    public String getLanguages() {
         return languages;
     }
 
-    public void setLanguages(List<String> languages) {
+    public void setLanguages(String languages) {
         this.languages = languages;
     }
 
@@ -72,11 +72,11 @@ public class BookData {
 
     @Override
     public String toString() {
-        return "---------------- DADOS DO Livro ---------------- " +
+        return "\n ---------------- DADOS DO LIVRO ---------------- " +
                 "\n Título: " + title +
-                "\n Autor: " + author +
+                "\n Autor{ " + author + "}" +
                 "\n Idioma: " + languages +
                 "\n Número de Downloads: " + downloadCount +
-                "------------------------------------------------ ";
+                "\n ------------------------------------------------ ";
     }
 }

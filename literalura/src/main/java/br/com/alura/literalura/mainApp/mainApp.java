@@ -128,23 +128,29 @@ public class mainApp {
             RBookData userbook = getBookData();
             if (userbook != null) {
                 //pega o primeiro autor da lista de autores da record livros
-                RAuthorData rAuthorData = userbook.authors().get(0);
-                BookData bookData;
-                AuthorData existedAuthor = authorRepository.findByName(rAuthorData.name());
-                if (existedAuthor != null) {
-                    bookData = new BookData(userbook, existedAuthor);
-
-                } else {
-                    AuthorData newAuthor = new AuthorData(rAuthorData);
-                    bookData = new BookData(userbook, newAuthor);
-                    authorRepository.save(newAuthor);
-                }
                 try {
-                    booksRepository.save(bookData);
-                    System.out.println("Livro salvo no banco de dados!" + bookData);
-                } catch (DataIntegrityViolationException e) {
-                    System.out.println("Livro já está cadastrado no banco:");
+                    RAuthorData rAuthorData = userbook.authors().get(0);
+                    BookData bookData;
+                    AuthorData existedAuthor = authorRepository.findByName(rAuthorData.name());
+                    if (existedAuthor != null) {
+                        bookData = new BookData(userbook, existedAuthor);
+
+                    } else {
+                        AuthorData newAuthor = new AuthorData(rAuthorData);
+                        bookData = new BookData(userbook, newAuthor);
+                        authorRepository.save(newAuthor);
+                    }
+                    try {
+                        booksRepository.save(bookData);
+                        System.out.println("Livro salvo no banco de dados!" + bookData);
+                    } catch (DataIntegrityViolationException e) {
+                        System.out.println("Livro já está cadastrado no banco:");
+                    }
+                } catch (IndexOutOfBoundsException e){
+                    System.out.println("Gutendex retornou uma busca vazia!");
                 }
+            } else {
+                System.out.println("Nenhum livro encontrado no Gutendex. Realize nova busca!");
             }
 
         }
